@@ -23,8 +23,7 @@ jobs:
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
       - name: run all files
         run: |
-          for file in docs/*; do python3 docsum.py ${file}; done
-
+            echo 'Who is the Democratic candidate for president?' | python3 RAGnews.py
   test_python_39:
     needs: test_python_38
     runs-on: ubuntu-latest
@@ -42,4 +41,4 @@ jobs:
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
       - name: run all files
         run: |
-          for file in docs/*; do python3 docsum.py ${file}; done
+            echo 'Who is the Democratic candidate for president?' | python3 RAGnews.py
