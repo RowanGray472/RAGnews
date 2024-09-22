@@ -117,15 +117,75 @@ def _catch_errors(func):
 ################################################################################
 
 
-def rag(text, db):
+def rag(text, db, keywords=None):
     '''
     This function uses retrieval augmented generation (RAG) to generate an LLM response to the input text.
     The db argument should be an instance of the `ArticleDB` class that contains the relevant documents to use.
     '''
-    keywords = extract_keywords(text)
+    if keywords is None:
+        keywords = extract_keywords(text)
+        system = f"""You are a professional journalist assigned with answering a 
+        question from a reader using a set of articles provided to you as 
+        context."""
+    else:
+        keywords = extract_keywords(keywords)
+        print(f'keywords: {keywords}')
+        system = f"""
+        ## ROLE
+        You are a computer program tasked with finding the most 
+        likely word to replace the hidden word in a sentence. As such, your
+        ouputs are direct and follow exactly the instructions as given.
+
+        ## INPUT
+
+        The input will be a sentence with either zero, one, or two hidden words 
+        in it, indicated by the [MASK0] or [MASK1] tokens. Additionally, you 
+        will receive a set of articles related to the query that will help you 
+        deduce the hidden word.
+
+        ## PROCESS
+
+        To ensure that you provide the most accurate answer, you wil need to
+        follow these steps. First, you will analyze your input sentence and
+        determine how many hidden words are present. Next, you will use the
+        provided articles to find the most likely word to replace the hidden
+        word or words in the input sentence. Finally, you will return the word
+        or words, and only the word or words, formatted as a Python list. 
+        Make sure to think this through step by step.
+
+        ## OUTPUT CHARACTERISTICS
+
+        The output must be a single word that would replace the [MASK0] or 
+        [MASK1] token in the input sentence.
+
+        ## OUTPUT FORMAT
+
+        The output will be formatted like a Python list. Each element in the
+        list will represent the word that replaces the hidden word or words
+        in the input sentence. If there are no hidden words in the input, the
+        output will be an empty list.
+
+        ## DO NOT
+
+        Do not provide any additional information or context.
+        Do not return any information other than the word or words that replace
+        the hidden word or words in the input sentence.
+
+        ## EXAMPLE
+
+        INPUT: "The current democratic candidate for president is [MASK0] 
+        and the republican candidate is [MASK1]"
+
+        OUTPUT: ['Harris', 'Trump']
+
+        INPUT: "There is no mask in here"
+
+        OUTPUT: []
+        
+        """
+    print(f'keywords: {keywords}')
     articles = db.find_articles(query = keywords)
 
-    system = f"You are a professional journalist assigned with answering a question from a reader using a set of articles provided to you as context."
     user = f"{text}\n\nArticles:\n\n" + '\n\n'.join([f"{article['title']}\n{article['en_summary']}" for article in articles])
     return run_llm(system, user)
 
