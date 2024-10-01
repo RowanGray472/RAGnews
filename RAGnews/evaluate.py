@@ -36,8 +36,11 @@ if __name__ == '__main__':
     import argparse
     import json
     import os
+    # Get the directory containing the script file
+    script_dir = os.path.dirname(os.path.realpath(__file__))
 
-    filepath = r"hairy-trumpet/data/wiki__page=2024_United_States_presidential_election,recursive_depth=0__dpsize=paragraph,transformations=[canonicalize, group, rmtitles, split]"
+    # Construct a path to the data file that is relative to the script file
+    filepath = os.path.join(script_dir, "hairy-trumpet/data/wiki__page=2024_United_States_presidential_election,recursive_depth=0__dpsize=paragraph,transformations=[canonicalize, group, rmtitles, split]")
 
     # Argument parser for command line arguments
     parser = argparse.ArgumentParser()
