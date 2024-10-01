@@ -4,15 +4,18 @@ TERMINAL COMMANDS WE NEED TO RUN THIS CODE:
 1. python3 -m venv env
 2. source env/bin/activate
 3. pip install -r requirements.txt
-4. python3 RAGnews.py
+4. python3 RAGnews/__init__.py
 
 """
 
 '''
-Run an interactive QA session with the news articles using the Groq LLM API and retrieval augmented generation (RAG).
+Runs an interactive QA session with the news articles using the Groq LLM API 
+and retrieval augmented generation (RAG).
 
 New articles can be added to the database with the --add_url parameter,
 and the path to the database can be changed with the --db parameter.
+# TODO: Separate LLM and non LLM code as much as possible
+# TODO: Add Doctests whenever possible
 '''
 
 from urllib.parse import urlparse
@@ -36,9 +39,10 @@ client = Groq(
 )
 
 
-def run_llm(system, user, model='llama3-8b-8192', seed=None):
+def run_llm(system, user, model='llama-3.1-70b-versatile', seed=None):
     '''
     This is a helper function for all the uses of LLMs in this file.
+    # TODO: Change model to a better one lol
     '''
     chat_completion = client.chat.completions.create(
         messages=[
@@ -72,20 +76,21 @@ def extract_keywords(text, seed=None):
     This is a helper function for RAG.
     Given an input text, this function extracts the keywords that will be used to perform 
     the search for articles that will be used in RAG.
+    # TODO: Make this only take the keywords from the text, not from things related to it
+    # TODO: Make this prompt work better
     '''
 
-    system = '''You are a professional journalist assigned with extracting keywords from the following text.  
+    system = '''
+    You are a professional journalist assigned with extracting keywords from the following text.  
                 The keywords should be relevant to the text and will be used to search for related articles. 
                 Only return the keywords. Separate each keyword with a space when the word ends. Do not place
-                the spaces between each letter—put them at the end of each word.'''
+                the spaces between each letter—put them at the end of each word. Only provide 5 keywords. 
+                Do not provide more than 5 keywords. Do not provide any additional characters. Do not provide any punctuation marks'''
     text = run_llm(system, text, seed=seed)
-    
-    def remove_extra_spaces(text):
-        """Takes output from the LLM, which a l w a y s  l o o k s  l i k e  t h i s, and removes the extra spaces."""  
-        cleaned_text = re.sub(' +', ' ', text)
-        return cleaned_text
-    cleaned_text = remove_extra_spaces(text)
-    return cleaned_text
+    def remove_non_alphabetical_chars(text):
+        return re.sub(r'[^a-zA-Z ]', '', text)
+    text = remove_non_alphabetical_chars(text)
+    return text
 
 
 ################################################################################
@@ -117,10 +122,11 @@ def _catch_errors(func):
 ################################################################################
 
 
-def rag(text, db, keywords=None):
+def rag(text, db, keywords=None, labels = None):
     '''
     This function uses retrieval augmented generation (RAG) to generate an LLM response to the input text.
     The db argument should be an instance of the `ArticleDB` class that contains the relevant documents to use.
+    # TODO: Add answer bank
     '''
     if keywords is None:
         keywords = extract_keywords(text)
@@ -133,43 +139,53 @@ def rag(text, db, keywords=None):
         system = f"""
         ## ROLE
         You are a computer program tasked with finding the most 
-        likely word to replace the hidden word in a sentence. As such, your
-        ouputs are direct and follow exactly the instructions as given.
+        likely word to replace the hidden word in a sentence from an answer 
+        bank. As such, your ouputs are direct and follow exactly the 
+        instructions as given.
 
         ## INPUT
 
-        The input will be a sentence with either zero, one, or two hidden words 
-        in it, indicated by the [MASK0] or [MASK1] tokens. Additionally, you 
-        will receive a set of articles related to the query that will help you 
-        deduce the hidden word.
+        The input will be a sentence with either a hidden word in it indicated 
+        by the MASK[0] token. 
+        Additionally, you will receive a set of articles related to the query 
+        that will help you deduce the hidden word. Finally, you will have an 
+        answer bank to choose the most likely word to replace the hidden 
+        word in the input.
 
         ## PROCESS
 
         To ensure that you provide the most accurate answer, you wil need to
         follow these steps. First, you will analyze your input sentence and
         determine how many hidden words are present. Next, you will use the
-        provided articles to find the most likely word to replace the hidden
-        word or words in the input sentence. Finally, you will return the word
-        or words, and only the word or words, formatted as a Python list. 
+        provided articles and the given answer bank to find the most likely 
+        word to replace the hidden word in the input sentence. 
+        Finally, you will return the word, and only the word, 
+        formatted as a Python list. 
+        
+        If you think the provided articles don't give you any help, make your 
+        best guess just based on the input sentence and the answer bank.
+
         Make sure to think this through step by step.
 
         ## OUTPUT CHARACTERISTICS
 
-        The output must be a single word that would replace the [MASK0] or 
-        [MASK1] token in the input sentence.
+        The output must be a single word that would replace the [MASK0] token 
+        in the input sentence. It must be a word from the
+        following answer bank: {labels}.
 
         ## OUTPUT FORMAT
 
-        The output will be formatted like a Python list. Each element in the
-        list will represent the word that replaces the hidden word or words
-        in the input sentence. If there are no hidden words in the input, the
-        output will be an empty list.
+        The output will be formatted like a Python list containing one element.
+        This element will be the word that replaces the hidden word in the 
+        input. The word must be an exact match to one of the words in the bank.
+
 
         ## DO NOT
 
         Do not provide any additional information or context.
         Do not return any information other than the word or words that replace
         the hidden word or words in the input sentence.
+        Do not provide an output list that contains any duplicate elements.
 
         ## EXAMPLE
 
@@ -183,7 +199,6 @@ def rag(text, db, keywords=None):
         OUTPUT: []
         
         """
-    print(f'keywords: {keywords}')
     articles = db.find_articles(query = keywords)
 
     user = f"{text}\n\nArticles:\n\n" + '\n\n'.join([f"{article['title']}\n{article['en_summary']}" for article in articles])
