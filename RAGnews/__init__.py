@@ -39,26 +39,36 @@ client = Groq(
 )
 
 
-def run_llm(system, user, model='llama-3.1-70b-versatile', seed=None):
+import time
+
+def run_llm(system, user, model='llama-3.1-70b-versatile', seed=None, max_retries=9):
     '''
     This is a helper function for all the uses of LLMs in this file.
     # TODO: Change model to a better one lol
     '''
-    chat_completion = client.chat.completions.create(
-        messages=[
-            {
-                'role': 'system',
-                'content': system,
-            },
-            {
-                "role": "user",
-                "content": user,
-            }
-        ],
-        model=model,
-        seed=seed,
-    )
-    return chat_completion.choices[0].message.content
+    delay = 1  # Initial delay
+    for i in range(max_retries):
+        try:
+            chat_completion = client.chat.completions.create(
+                messages=[
+                    {
+                        'role': 'system',
+                        'content': system,
+                    },
+                    {
+                        "role": "user",
+                        "content": user,
+                    }
+                ],
+                model=model,
+                seed=seed,
+            )
+            return chat_completion.choices[0].message.content
+        except Exception as e:
+            print(f"Error: {e}. Retrying in {delay} seconds...")
+            time.sleep(delay)
+            delay *= 2  # Double the delay for each retry
+    raise Exception("Max retries exceeded")
 
 
 def summarize_text(text, seed=None):
