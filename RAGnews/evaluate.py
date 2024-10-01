@@ -63,8 +63,6 @@ if __name__ == '__main__':
         prediction = evaluator.predict(text_case["masked_text"], labels)
         if prediction == str(text_case["masks"]):
             n_correct += 1
-        print(f"prediction: {prediction}")
-        print(f"answer: {text_case["masks"]}")
         print(f"number processed: {i} out of {n_tests}")
     correct_ratio = n_correct / n_tests
 
