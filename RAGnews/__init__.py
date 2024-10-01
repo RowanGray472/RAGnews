@@ -189,10 +189,9 @@ def rag(text, db, keywords=None, labels = None):
 
         ## EXAMPLE
 
-        INPUT: "The current democratic candidate for president is [MASK0] 
-        and the republican candidate is [MASK1]"
+        INPUT: "The current democratic candidate for president is [MASK0]"
 
-        OUTPUT: ['Harris', 'Trump']
+        OUTPUT: ['Harris']
 
         INPUT: "There is no mask in here"
 
