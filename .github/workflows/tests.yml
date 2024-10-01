@@ -26,7 +26,7 @@ jobs:
     - name: run evaluate.py and check correct_ratio
       run: |
         export PYTHONPATH=.
-        output=$(python3 RAGnews/evaluate.py --data "hairy-trumpet/data/wiki__page=2024_United_States_presidential_election,recursive_depth=0__dpsize=paragraph,transformations=[canonicalize, group, rmtitles, split]")  # Added quotes around --data argument
+        output=$(python3 RAGnews/evaluate.py --data "hairy-trumpet/data/wiki__page=2024_United_States_presidential_election")  # Modified --data argument to only include the file path
         correct_ratio=$(echo "$output" | grep -oP 'Correct Ratio: \K[0-9.]+')
         if (( $(echo "$correct_ratio > 0.7" | bc -l) )); then
           echo "Test passed"
@@ -53,7 +53,7 @@ jobs:
     - name: run evaluate.py and check correct_ratio
       run: |
         export PYTHONPATH=.
-        output=$(python3 RAGnews/evaluate.py --data "hairy-trumpet/data/wiki__page=2024_United_States_presidential_election,recursive_depth=0__dpsize=paragraph,transformations=[canonicalize, group, rmtitles, split]")  # Added quotes around --data argument
+        output=$(python3 RAGnews/evaluate.py --data "hairy-trumpet/data/wiki__page=2024_United_States_presidential_election")  # Modified --data argument to only include the file path
         correct_ratio=$(echo "$output" | grep -oP 'Correct Ratio: \K[0-9.]+')
         if (( $(echo "$correct_ratio > 0.7" | bc -l) )); then
           echo "Test passed"
