@@ -35,13 +35,16 @@ class RAGEvaluator:
 if __name__ == '__main__':
     import argparse
     import json
+    import os
+
+    filepath = r"hairy-trumpet/data/wiki__page=2024_United_States_presidential_election,recursive_depth=0__dpsize=paragraph,transformations=[canonicalize, group, rmtitles, split]"
 
     # Argument parser for command line arguments
     parser = argparse.ArgumentParser()
-    parser.add_argument('--data', type=str)
+    parser.add_argument('--data', type=str, default=filepath)
     args = parser.parse_args()
 
-    # Load data from the file
+    # Load data from the current file
     with open(args.data, 'r') as f:
         data = [json.loads(line) for line in f]
 
