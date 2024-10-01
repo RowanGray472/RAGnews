@@ -28,7 +28,8 @@ jobs:
     - name: run evaluate.py and check correct_ratio
       run: |
         export PYTHONPATH=.
-        output=$(python3 RAGnews/evaluate.py --data "hairy-trumpet/data/wiki__page=2024_United_States_presidential_election,recursive_depth=0__dpsize=paragraph,transformations=[canonicalize, group, rmtitles, split]")
+        python3 RAGnews/evaluate.py --data "hairy-trumpet/data/wiki__page=2024_United_States_presidential_election,recursive_depth=0__dpsize=paragraph,transformations=[canonicalize, group, rmtitles, split]" | tee /dev/fd/2 > output.txt
+        output=$(cat output.txt)
         correct_ratio=$(echo "$output" | grep -oP 'Correct Ratio: \K[0-9.]+')
         if (( $(echo "$correct_ratio > 0.7" | bc -l) )); then
           echo "Test passed"
@@ -37,6 +38,7 @@ jobs:
           exit 1
         fi
   test_python_39:
+    needs: test_python_38
     runs-on: ubuntu-latest
     env:
       GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
@@ -57,7 +59,8 @@ jobs:
     - name: run evaluate.py and check correct_ratio
       run: |
         export PYTHONPATH=.
-        output=$(python3 RAGnews/evaluate.py --data "hairy-trumpet/data/wiki__page=2024_United_States_presidential_election,recursive_depth=0__dpsize=paragraph,transformations=[canonicalize, group, rmtitles, split]")
+        python3 RAGnews/evaluate.py --data "hairy-trumpet/data/wiki__page=2024_United_States_presidential_election,recursive_depth=0__dpsize=paragraph,transformations=[canonicalize, group, rmtitles, split]" | tee /dev/fd/2 > output.txt
+        output=$(cat output.txt)
         correct_ratio=$(echo "$output" | grep -oP 'Correct Ratio: \K[0-9.]+')
         if (( $(echo "$correct_ratio > 0.7" | bc -l) )); then
           echo "Test passed"
