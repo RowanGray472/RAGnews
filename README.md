@@ -1,29 +1,13 @@
-# RAGnews ![Tests](https://github.com/RowanGray472/RAGnews/actions/workflows/tests.yml/badge.svg)
+# RAGnews ![Tests](https://github.com/RowanGray472/RAGnews/actions/workflows/tests.yml/badge.svg?branch=evaluate)
  
-This repo contains code to have a conversation with the Groq API agent about recent events in American politics, using RAG to familiarize the model with recent news.
+This branch adds an evaluate.py file that we can use to more robustly evaluate the RAG model set up in RAGnews.
 
 Here's a sample interaction with the code (after setting up the virtual environment)
 
 ```
-python3 RAGnews.py
+python3 RAGnews/evaluate.py
 ```
 
-Then the system prints this
+The system will chug along for a while—right now it's using (by default) the hairy-trumpet submodule to test its knowledge of recent political events and that dataset contains 127 masked examples. Once it finishes it'll print out how many it got right, the total number it checked, and its success rate. It usually gets around 79% of them right, but many more than that are pretty close to right.
 
-```
-ragnews>
-```
-
-And we ask...
-
-```
-Who is the current Democratic party candidate for president?
-```
-
-And we get...
-
-```
-Based on the provided articles, the current Democratic Party candidate for president is not explicitly stated, as Joe Biden has already held the office and is now stepping aside. In fact, Article 6 states that President Joe Biden has withdrawn from the presidential election against Republican candidate Donald Trump. Additionally, Article 9 indicates that Kamala Harris has been chosen as the party's nominee for the presidential election, suggesting that she is the current Democratic Party candidate for president.
-```
-
-Soooo, not perfect but closer than you'll get from a non-RAG API!
+You can change the dataset you want to use to test the RAGnews.py code by changing --data to your source.
